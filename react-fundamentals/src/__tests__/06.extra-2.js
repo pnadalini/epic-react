@@ -1,35 +1,35 @@
-import * as React from 'react'
-import {alfredTip} from '@kentcdodds/react-workshop-app/test-utils'
-import {render, screen} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import App from '../final/06.extra-2'
-// import App from '../exercise/06'
+import * as React from "react"
+import {alfredTip} from "@kentcdodds/react-workshop-app/test-utils"
+import {render, screen} from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+// import App from '../final/06.extra-2'
+import App from "../exercise/06.extra-2"
 
 beforeAll(() => {
-  jest.spyOn(global, 'alert').mockImplementation(() => {})
+  jest.spyOn(global, "alert").mockImplementation(() => {})
 })
 
 beforeEach(() => {
   global.alert.mockClear()
 })
 
-test('calls the onSubmitUsername handler when the submit is fired', async () => {
+test("calls the onSubmitUsername handler when the submit is fired", async () => {
   render(<App />)
   const input = screen.getByLabelText(/username/i)
   const submit = screen.getByText(/submit/i)
 
-  let value = 'A'
+  let value = "A"
   await userEvent.type(input, value)
   expect(submit).toBeDisabled() // upper-case
 
   const output = screen.getByText(/lower\s?case/i)
   expect(output).toBeInTheDocument()
   alfredTip(
-    output.getAttribute('role') !== 'alert',
+    output.getAttribute("role") !== "alert",
     'Add an attribute `role="alert"` to the div to help with screen reader users.',
   )
   await userEvent.clear(input)
-  value = 'a'
+  value = "a"
   await userEvent.type(input, value)
   await userEvent.click(submit)
 

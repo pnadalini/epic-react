@@ -1,10 +1,10 @@
-import * as React from 'react'
-import {render, screen, within} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import App from '../final/07'
-// import App from '../exercise/07'
+import * as React from "react"
+import {render, screen, within} from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+// import App from '../final/07'
+import App from "../exercise/07"
 
-test('renders', async () => {
+test("renders", async () => {
   const {container} = render(<App />)
   const plus = screen.getByText(/add item/i)
   await userEvent.click(plus)
@@ -13,15 +13,15 @@ test('renders', async () => {
   await userEvent.click(plus)
 
   const orangeInput = screen.getByLabelText(/orange/i)
-  const orangeContainer = screen.getByText(/orange/i).closest('li')
+  const orangeContainer = screen.getByText(/orange/i).closest("li")
   const inOrange = within(orangeContainer)
-  await userEvent.type(orangeInput, 'sup dawg')
-  await userEvent.click(inOrange.getByText('remove'))
+  await userEvent.type(orangeInput, "sup dawg")
+  await userEvent.click(inOrange.getByText("remove"))
 
-  const allLis = container.querySelectorAll('li')
-  Array.from(allLis).forEach(li => {
-    const label = li.querySelector('label')
-    const input = li.querySelector('input')
+  const allLis = container.querySelectorAll("li")
+  Array.from(allLis).forEach((li) => {
+    const label = li.querySelector("label")
+    const input = li.querySelector("input")
     expect(label.textContent).toBe(input.value)
   })
 })

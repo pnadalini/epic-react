@@ -1,14 +1,14 @@
-import {alfredTip} from '@kentcdodds/react-workshop-app/test-utils'
-import chalk from 'chalk'
-import {render, screen, prettyDOM} from '@testing-library/react'
-import App from '../final/05'
-// import App from '../exercise/05'
+import {alfredTip} from "@kentcdodds/react-workshop-app/test-utils"
+import chalk from "chalk"
+import {render, screen, prettyDOM} from "@testing-library/react"
+// import App from '../final/05'
+import App from "../exercise/05"
 
-test('renders the correct styles new', async () => {
+test("renders the correct styles new", async () => {
   render(<App />)
   const allBoxes = screen.getAllByText(/box/i)
 
-  const className = 'box'
+  const className = "box"
   allBoxes.forEach(box => {
     alfredTip(
       () => {
@@ -26,7 +26,7 @@ ${chalk.reset(prettyDOM(box))}
   allBoxes.forEach(box => {
     alfredTip(
       () => {
-        expect(box).toHaveStyle('font-style: italic;')
+        expect(box).toHaveStyle("font-style: italic;")
       },
       () =>
         `
@@ -41,12 +41,12 @@ ${chalk.reset(prettyDOM(box))}
   const medium = screen.getByText(/medium/i)
   const large = screen.getByText(/large/i)
 
-  expect(small).toHaveClass('box--small')
-  expect(small).toHaveStyle('background-color: lightblue;')
+  expect(small).toHaveClass("box--small")
+  expect(small).toHaveStyle("background-color: lightblue;")
 
-  expect(medium).toHaveClass('box--medium')
-  expect(medium).toHaveStyle('background-color: pink;')
+  expect(medium).toHaveClass("box--medium")
+  expect(medium).toHaveStyle("background-color: pink;")
 
-  expect(large).toHaveClass('box--large')
-  expect(large).toHaveStyle('background-color: orange;')
+  expect(large).toHaveClass("box--large")
+  expect(large).toHaveStyle("background-color: orange;")
 })

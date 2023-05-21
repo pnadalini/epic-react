@@ -35,13 +35,24 @@ const useAsync = initialState => {
     ...initialState,
   })
 
+  const ref = React.useRef(false)
+
+  React.useEffect(() => {
+    ref.current = true
+    return () => {
+      ref.current = false
+    }
+  }, [])
+
   const run = React.useCallback(promise => {
     dispatch({type: 'pending'})
     promise.then(
       data => {
+        if (!ref.current) return
         dispatch({type: 'resolved', data})
       },
       error => {
+        if (!ref.current) return
         dispatch({type: 'rejected', error})
       },
     )
@@ -62,7 +73,7 @@ function PokemonInfo({pokemonName}) {
     if (!pokemonName) {
       return
     }
-    return run(fetchPokemon(pokemonName))
+    run(fetchPokemon(pokemonName))
   }, [pokemonName, run])
 
   switch (status) {

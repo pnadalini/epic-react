@@ -3,6 +3,7 @@
 
 import * as React from 'react'
 import {Switch} from '../switch'
+import warning from 'warning'
 
 const callAll =
   (...fns) =>
@@ -33,16 +34,45 @@ function useToggle({
   reducer = toggleReducer,
   onChange,
   on: controlledOn,
+  readOnly = false,
 } = {}) {
   const {current: initialState} = React.useRef({on: initialOn})
+  const localState = React.useRef(controlledOn)
   const [state, dispatch] = React.useReducer(reducer, initialState)
-
   const onIsControlled = controlledOn != null
+
   const on = onIsControlled ? controlledOn : state.on
+
+  React.useEffect(() => {
+    const hasValueWithoutChange = onIsControlled && !onChange
+
+    warning(
+      !hasValueWithoutChange || readOnly,
+      `Warning: Failed prop type: You provided a "on" prop to a useToggle without an "onChange" handler. 
+      This will render a read-only field. Please, set either "onChange" or "readOnly".`,
+    )
+  }, [onIsControlled, onChange, readOnly])
+
+  React.useEffect(() => {
+    const onIsNull = controlledOn == null
+    const prevOnIsNull = localState.current == null
+    warning(
+      !(prevOnIsNull && !onIsNull),
+      `Warning: A component is changing an uncontrolled input of type ${controlledOn} to be controlled. Input elements should not switch from controlled to uncontrolled (or vice versa).
+      Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://fb.me/react-controlled-components`,
+    )
+    if (localState.current == null) {
+    }
+    warning(
+      !(!prevOnIsNull && onIsNull),
+      `Warning: A component is changing a controlled input of type ${localState.current} to be uncontrolled. Input elements should not switch from controlled to uncontrolled (or vice versa).
+      Decide between using a controlled or uncontrolled input element for the lifetime of the component. More info: https://fb.me/react-controlled-components`,
+    )
+  }, [controlledOn])
 
   const dispatchWithOnChange = action => {
     if (!onIsControlled) {
-      return dispatch(action, initialState)
+      dispatch(action, initialState)
     }
     onChange?.(reducer({...state, on}, action), action)
   }
@@ -74,12 +104,13 @@ function useToggle({
   }
 }
 
-function Toggle({on: controlledOn, onChange, initialOn, reducer}) {
+function Toggle({on: controlledOn, onChange, initialOn, reducer, readOnly}) {
   const {on, getTogglerProps} = useToggle({
     on: controlledOn,
     onChange,
     initialOn,
     reducer,
+    readOnly,
   })
   const props = getTogglerProps({on})
   return <Switch {...props} />

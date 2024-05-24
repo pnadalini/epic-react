@@ -8,7 +8,6 @@ import {build, fake} from '@jackfranklin/test-data-bot'
 import {rest} from 'msw'
 import {setupServer} from 'msw/node'
 import Login from '../../components/login-submission'
-import {handlers} from 'test/server-handlers'
 
 const buildLoginForm = build({
   fields: {
@@ -17,7 +16,14 @@ const buildLoginForm = build({
   },
 })
 
-const server = setupServer(...handlers)
+const server = setupServer(
+  rest.post(
+    'https://auth-provider.example.com/api/login',
+    async (req, res, ctx) => {
+      return res(ctx.json({username: req.body.username}))
+    },
+  ),
+)
 
 beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())
@@ -34,34 +40,4 @@ test(`logging in displays the user's username`, async () => {
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
   expect(screen.getByText('Welcome')).toBeInTheDocument()
   expect(screen.getByText(username)).toBeInTheDocument()
-})
-
-test(`logging without a password`, async () => {
-  render(<Login />)
-
-  await userEvent.click(screen.getByRole('button', {name: /submit/i}))
-  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
-
-  expect(screen.getByRole('alert').textContent).toMatchInlineSnapshot(
-    `"password required"`,
-  )
-})
-
-test(`getting a 500 error`, async () => {
-  const errorMessage = 'server error'
-  server.use(
-    rest.post(
-      'https://auth-provider.example.com/api/login',
-      async (req, res, ctx) => {
-        return res(ctx.status(500), ctx.json({message: errorMessage}))
-      },
-    ),
-  )
-
-  render(<Login />)
-
-  await userEvent.click(screen.getByRole('button', {name: /submit/i}))
-  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
-
-  expect(screen.getByRole('alert')).toHaveTextContent(errorMessage)
 })

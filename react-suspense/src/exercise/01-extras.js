@@ -2,23 +2,18 @@
 // http://localhost:3000/isolated/exercise/01.js
 
 import * as React from 'react'
-import {PokemonDataView, PokemonErrorBoundary, fetchPokemon} from '../pokemon'
+import {
+  PokemonDataView,
+  PokemonErrorBoundary,
+  PokemonInfoFallback,
+  fetchPokemon,
+} from '../pokemon'
+import {createResource} from 'utils'
 
-let pokemon
-let error
-
-const pokemonPromise = fetchPokemon('pikacahu').then(
-  response => (pokemon = response),
-  errorData => (error = errorData),
-)
+const resource = createResource(fetchPokemon('pikachu'))
 
 function PokemonInfo() {
-  if (error) {
-    throw error
-  }
-  if (!pokemon) {
-    throw pokemonPromise
-  }
+  const pokemon = resource.read()
 
   return (
     <div>
@@ -34,7 +29,7 @@ function App() {
     <div className="pokemon-info-app">
       <div className="pokemon-info">
         <PokemonErrorBoundary>
-          <React.Suspense fallback="loading...">
+          <React.Suspense fallback={<PokemonInfoFallback name="Pikachu" />}>
             <PokemonInfo />
           </React.Suspense>
         </PokemonErrorBoundary>

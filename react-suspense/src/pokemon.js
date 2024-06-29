@@ -26,7 +26,7 @@ const formatDate = date =>
 const graphql = String.raw
 
 // the delay argument is for faking things out a bit
-function fetchPokemon(name, delay = 1500) {
+function fetchPokemon(name, delay = 500) {
   const endTime = Date.now() + delay
   const pokemonQuery = graphql`
     query PokemonInfo($name: String) {

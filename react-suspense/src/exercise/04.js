@@ -29,12 +29,11 @@ const SUSPENSE_CONFIG = {
   busyMinDurationMs: 700,
 }
 
-// 🐨 create a pokemonResourceCache object
+const PokemonResouceCacheContext = React.createContext()
 
-// 🐨 create a getPokemonResource function which accepts a name checks the cache
-// for an existing resource. If there is none, then it creates a resource
-// and inserts it into the cache. Finally the function should return the
-// resource.
+const usePokeonResourceCache = () => {
+  return React.useContext(PokemonResouceCacheContext)
+}
 
 function createPokemonResource(pokemonName) {
   return createResource(fetchPokemon(pokemonName))
@@ -44,6 +43,7 @@ function App() {
   const [pokemonName, setPokemonName] = React.useState('')
   const [startTransition, isPending] = React.useTransition(SUSPENSE_CONFIG)
   const [pokemonResource, setPokemonResource] = React.useState(null)
+  const getPokemonResource = usePokeonResourceCache()
 
   React.useEffect(() => {
     if (!pokemonName) {
@@ -51,10 +51,9 @@ function App() {
       return
     }
     startTransition(() => {
-      // 🐨 change this to getPokemonResource instead
-      setPokemonResource(createPokemonResource(pokemonName))
+      setPokemonResource(getPokemonResource(pokemonName))
     })
-  }, [pokemonName, startTransition])
+  }, [pokemonName, startTransition, getPokemonResource])
 
   function handleSubmit(newPokemonName) {
     setPokemonName(newPokemonName)
@@ -88,4 +87,52 @@ function App() {
   )
 }
 
-export default App
+const initialValue = {}
+
+const PokemonCacheProvider = ({children, cacheTime}) => {
+  const cache = React.useRef(initialValue)
+  const expirations = React.useRef({})
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      for (const [name, time] of Object.entries(expirations.current)) {
+        if (time <= Date.now()) {
+          delete cache.current[name]
+          delete expirations.current[name]
+        }
+      }
+    }, 1_000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const getPokemonResource = React.useCallback(
+    name => {
+      const pokemonName = name.toLowerCase()
+      let pokemonResource = cache.current[pokemonName]
+      if (!pokemonResource) {
+        pokemonResource = createPokemonResource(pokemonName)
+        cache.current[pokemonName] = pokemonResource
+      }
+      expirations.current[pokemonName] = Date.now() + cacheTime
+      return pokemonResource
+    },
+    [cache, cacheTime],
+  )
+
+  return (
+    <PokemonResouceCacheContext.Provider value={getPokemonResource}>
+      {children}
+    </PokemonResouceCacheContext.Provider>
+  )
+}
+
+function AppWithProvider() {
+  const cacheTime = 5_000
+  return (
+    <PokemonCacheProvider cacheTime={cacheTime}>
+      <App />
+    </PokemonCacheProvider>
+  )
+}
+
+export default AppWithProvider
